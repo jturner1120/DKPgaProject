@@ -5,66 +5,52 @@ import json
 from pprint import pprint
 from bs4 import BeautifulSoup as BS
 
+debugging = True
 
 def main():
-    split = []
-    jsonstatitems = []
-    jsonfinishitems = []
-    jsonDecoded = []
-    jsonfinishdecoded = []
-    statnotFound = []
-    finishesnotfound = []
+    seedpage = getseedpage()
+    myPlayerLinks = pulloutplayerlinks(seedpage)
+    linkparts = splitlinks(myPlayerLinks)
+    jsonstatlinks = generatejsonstatlinks(linkparts)
+    jsonfinishlinks = generatejsonfinishlinks(linkparts)
+    decodedstats = readjsontopy(jsonstatlinks)
+    decodedfinish = readjsontopy(jsonfinishlinks)
 
-    debugging = False
 
-    index = 1
-
+def getseedpage():
     seedPage = "http://www.pgatour.com/players.html"
     pgaPlayersPage = getPageData(seedPage)
-    playerSoup = BS(pgaPlayersPage, 'html.parser')
+    souptogo = BS(pgaPlayersPage, 'html.parser')
+    return souptogo
 
-    myPlayerLinks = playerSoup.find_all('a', href=re.compile('^/content/pgatour/players/player'))
-    del myPlayerLinks[:5]
-    for link in myPlayerLinks:
+def pulloutplayerlinks(playersoup):
+    playerlinks  = playersoup.find_all('a', href=re.compile('^/content/pgatour/players/player'))
+    del playerlinks[:5]
+    return playerlinks
+
+
+def splitlinks(links):
+    storage = []
+    for link in links:
         slink = str(link)
-        split.append(slink.split('.'))
-    for item in split:
-        tempplayerstatsjson = "http://www.pgatour.com/data/players/" + item[1] + "/2017stat.json"
-        tempplayerfinishesjson = "http://www.pgatour.com/data/players/" + item[1] + "/2017results.json"
-        jsonstatitems.append(tempplayerstatsjson)
-        jsonfinishitems.append(tempplayerfinishesjson)
-    for thing in jsonstatitems[1:5]:
-        if debugging == True:
-            print(len(jsonitems))
-            print(index)
-            index += 1
-        try:
-            jsonthing = readjsontopy(thing)
-            jsonDecoded.append(jsonthing)
-        except urlerror.HTTPError as err:
-            if err.code == 404:
-                statnotFound.append(thing)
-                continue
-            else:
-                raise
-    for thing in jsonfinishitems[1:5]:
-        try:
-            jsonthing = readjsontopy(thing)
-            jsonfinishdecoded.append(jsonthing)
-        except urlerror.HTTPError as err:
-            if err.code == 404:
-                finishesnotfound.append(thing)
-                continue
-            else:
-                raise
-    if debugging == True:
-        resultsString = "There were " + str(len(statnotFound)) + " golfers not found out of " + \
-                        str(len(jsonstatitems)) + "."
-        print(resultsString)
-        pprint(jsonDecoded[0])
-        pprint(jsonfinishdecoded[0])
+        storage.append(slink.split('.'))
+    return storage
 
 
+def generatejsonstatlinks(linkparts):
+    storage = []
+    for linkpart in linkparts:
+        tempstatsjson = "http://www.pgatour.com/data/players/" + linkpart[1] + "/2017stat.json"
+        storage.append(tempstatsjson)
+    return storage
+
+
+def generatejsonfinishlinks(linkparts):
+    storage = []
+    for linkpart in linkparts:
+        tempfinshjson = "http://www.pgatour.com/data/players/" + linkpart[1] + "/2017results.json"
+        storage.append(tempfinshjson)
+    return storage
 
 
 def getPageData(url):
@@ -72,10 +58,31 @@ def getPageData(url):
         return url.read()
 
 
-def readjsontopy(jsonitem):
-    with urlreq.urlopen(jsonitem) as url:
-        data = json.loads(url.read().decode())
-        return data
+def readjsontopy(jsonlinks):
+    storage = []
+    if debugging == True:
+        for link in jsonlinks[1:5]:
+            try:
+                with urlreq.urlopen(link) as url:
+                    data = json.loads(url.read().decode())
+                    storage.append(data)
+            except urlerror.HTTPError as err:
+                if err.code == 404:
+                    continue
+                else:
+                    raise
+    else:
+        for link in jsonlinks:
+            try:
+                with urlreq.urlopen(link) as url:
+                    data = json.loads(url.read().decode())
+                    storage.append(data)
+            except urlerror.HTTPError as err:
+                if err.code == 404:
+                    continue
+                else:
+                    raise
+    return storage
 
 #for use in dubugging to find json pages
 def printrawhtmlplayerpage():
