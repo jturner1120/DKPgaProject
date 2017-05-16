@@ -5,7 +5,7 @@ import json
 from pprint import pprint
 from bs4 import BeautifulSoup as BS
 
-debugging = True
+debugging = False
 
 def main():
     seedpage = getseedpage()
@@ -15,7 +15,8 @@ def main():
     jsonfinishlinks = generatejsonfinishlinks(linkparts)
     decodedstats = readjsontopy(jsonstatlinks)
     decodedfinish = readjsontopy(jsonfinishlinks)
-
+    writejsonfile('stats', decodedstats)
+    writejsonfile('finishes', decodedfinish)
 
 def getseedpage():
     seedPage = "http://www.pgatour.com/players.html"
@@ -25,7 +26,7 @@ def getseedpage():
 
 def pulloutplayerlinks(playersoup):
     playerlinks  = playersoup.find_all('a', href=re.compile('^/content/pgatour/players/player'))
-    del playerlinks[:5]
+    del playerlinks[:4]
     return playerlinks
 
 
@@ -84,12 +85,22 @@ def readjsontopy(jsonlinks):
                     raise
     return storage
 
+
+def writejsonfile(filename, dataset):
+    with open(filename, 'w') as jsonfile:
+        json.dump(dataset, jsonfile)
+
 #for use in dubugging to find json pages
 def printrawhtmlplayerpage():
     playerpage = "http://www.pgatour.com/players/player.29745.tyler-aldridge.html"
     toviewplayerhtml = getPageData(playerpage)
     playertesthtmlsoup = BS(toviewplayerhtml, 'html.parser')
     print(playertesthtmlsoup.prettify())
+
+
+def outputresultsofset(outputset, toindex):
+    for item in outputset[0:toindex]:
+        pprint(item)
 
 
 

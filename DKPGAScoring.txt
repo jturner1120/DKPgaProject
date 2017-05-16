@@ -19,11 +19,11 @@ Scoring system for DK PGA:
     8th: 9 PTs
     9th: 8 PTs
     10th: 7 PTs
-    11th–15th: 6 PTs
-    16th–20th: 5 PTs
-    21st–25th: 4 PTs
-    26th–30th: 3 PTs
-    31st–40th: 2 PTs
+    11th-15th: 6 PTs
+    16th-20th: 5 PTs
+    21st-25th: 4 PTs
+    26th-30th: 3 PTs
+    31st-40th: 2 PTs
     41st-50th: 1 PTs
 
     Streak of 3 Birdies of Better (MAX 1 Per Round) (BIR3+): +3 PTs
